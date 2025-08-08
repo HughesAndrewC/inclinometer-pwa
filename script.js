@@ -1,5 +1,5 @@
-const pitchIndicator = document.getElementById('pitch-indicator');
-const rollIndicator = document.getElementById('roll-indicator');
+const pitchLine = document.getElementById('pitch-line');
+const rollLine = document.getElementById('roll-line');
 const pitchDisplay = document.getElementById('pitch');
 const rollDisplay = document.getElementById('roll');
 const settingsBtn = document.getElementById('settings-btn');
@@ -14,13 +14,30 @@ let rollOffset = Number(localStorage.getItem('rollOffset')) || 0;
 // Smoothing variables
 let lastPitch = 0;
 let lastRoll = 0;
-const smoothingFactor = 0.1; // Adjust for smoother transitions
+const smoothingFactor = 0.05; // Stronger smoothing to reduce jumps
 
 // Add permission button
 const permissionBtn = document.createElement('button');
 permissionBtn.id = 'permission-btn';
 permissionBtn.textContent = 'Enable Inclinometer';
 document.getElementById('inclinometer').appendChild(permissionBtn);
+
+// Generate degree markings dynamically
+function generateDegreeMarks() {
+    const pitchMarks = document.querySelector('#pitch-gauge .degree-marks');
+    const rollMarks = document.querySelector('#roll-gauge .degree-marks');
+    for (let i = 0; i < 36; i++) {
+        const angle = i * 10;
+        const mark = `
+            <g transform="rotate(${angle}, 100, 100)">
+                <line x1="100" y1="10" x2="100" y2="20" stroke="#666" stroke-width="2"/>
+                <text x="100" y="35" text-anchor="middle" fill="#fff" font-size="10" transform="rotate(${-angle}, 100, 100)">${angle - 180}°</text>
+            </g>`;
+        pitchMarks.innerHTML += mark;
+        rollMarks.innerHTML += mark;
+    }
+}
+generateDegreeMarks();
 
 function updateGauge(event) {
     // Pitch: beta (x-axis), Roll: alpha (z-axis)
@@ -29,6 +46,7 @@ function updateGauge(event) {
 
     // Log for debugging
     console.log('Raw - Beta (pitch):', event.beta, 'Alpha (roll):', event.alpha, 'Gamma:', event.gamma);
+    console.log('Processed - Pitch:', pitch, 'Roll:', roll);
 
     // Apply offsets
     pitch -= pitchOffset;
@@ -48,9 +66,10 @@ function updateGauge(event) {
     pitchDisplay.textContent = pitch.toFixed(1);
     rollDisplay.textContent = roll.toFixed(1);
 
-    // Rotate indicators
-    pitchIndicator.style.transform = `rotate(${pitch}deg)`;
-    rollIndicator.style.transform = `rotate(${roll}deg)`;
+    // Rotate lines: pitch clockwise for positive, counterclockwise for negative
+    // Roll line rotates opposite to phone roll to appear level
+    pitchLine.style.transform = `rotate(${pitch}deg)`;
+    rollLine.style.transform = `rotate(${-roll}deg)`;
 }
 
 // Zero the pitch and roll

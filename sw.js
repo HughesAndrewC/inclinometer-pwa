@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inclinometer-cache-v4';
+const CACHE_NAME = 'inclinometer-cache-v5';
 const urlsToCache = [
     '/inclinometer-pwa/',
     '/inclinometer-pwa/index.html',
