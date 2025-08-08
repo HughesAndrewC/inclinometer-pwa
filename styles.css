@@ -1,0 +1,138 @@
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #222;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    touch-action: none;
+}
+
+#inclinometer {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#gauge {
+    width: 80vmin;
+    height: 80vmin;
+    background: #333;
+    border-radius: 50%;
+    position: relative;
+    border: 5px solid #666;
+    overflow: hidden;
+}
+
+#bubble {
+    width: 20px;
+    height: 20px;
+    background: #00ff00;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+}
+
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+}
+
+#crosshair::before, #crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#crosshair::before {
+    width: 100%;
+    height: 1px;
+    top: 50%;
+}
+
+#crosshair::after {
+    height: 100%;
+    width: 1px;
+    left: 50%;
+}
+
+#readout {
+    margin: 20px 0;
+    font-size: 1.2em;
+}
+
+#settings-btn {
+    font-size: 1.5em;
+    padding: 10px 20px;
+    background: #444;
+    border: none;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#settings-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+#settings-menu.hidden {
+    display: none;
+}
+
+#settings-menu h2 {
+    margin: 0 0 20px;
+}
+
+#settings-menu button {
+    font-size: 1.2em;
+    padding: 10px 20px;
+    margin: 10px;
+    background: #444;
+    border: none;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Landscape orientation */
+@media (orientation: landscape) {
+    #inclinometer {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    #gauge {
+        width: 50vmin;
+        height: 50vmin;
+    }
+
+    #readout {
+        margin: 0 20px;
+    }
+}
