@@ -10,8 +10,23 @@ const settingsMenu = document.getElementById('settings-menu');
 const zeroBtn = document.getElementById('zero-btn');
 const closeSettings = document.getElementById('close-settings');
 
+// Add a permission button to the UI
+const permissionBtn = document.createElement('button');
+permissionBtn.id = 'permission-btn';
+permissionBtn.textContent = 'Enable Inclinometer';
+permissionBtn.style.cssText = `
+    font-size: 1.5em;
+    padding: 10px 20px;
+    background: #444;
+    border: none;
+    color: #fff;
+    border-radius: 5px;
+    margin: 10px;
+    cursor: pointer;
+`;
+document.getElementById('inclinometer').appendChild(permissionBtn);
+
 function updateGauge(event) {
-    // Get raw pitch (beta) and roll (gamma) from DeviceOrientationEvent
     let pitch = event.beta || 0; // Rotation around X-axis (degrees)
     let roll = event.gamma || 0; // Rotation around Y-axis (degrees)
 
@@ -27,7 +42,7 @@ function updateGauge(event) {
     pitchDisplay.textContent = pitch.toFixed(1);
     rollDisplay.textContent = roll.toFixed(1);
 
-    // Calculate bubble position (map ±90° to gauge dimensions)
+    // Calculate bubble position
     const gauge = document.getElementById('gauge');
     const gaugeSize = gauge.offsetWidth;
     const maxBubbleOffset = (gaugeSize - 20) / 2; // 20 is bubble size
@@ -48,13 +63,37 @@ function zeroGauge() {
     updateGauge(event);
 }
 
-// Handle device orientation events
-window.addEventListener('deviceorientation', (event) => {
-    window.lastOrientation = event; // Store for zeroing
-    updateGauge(event);
-});
+// Request orientation permission
+function requestOrientationPermission() {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+                if (permissionState === 'granted') {
+                    console.log('Device orientation permission granted');
+                    window.addEventListener('deviceorientation', (event) => {
+                        window.lastOrientation = event; // Store for zeroing
+                        updateGauge(event);
+                    });
+                    permissionBtn.style.display = 'none'; // Hide button after permission
+                } else {
+                    alert('Permission denied for device orientation. Inclinometer will not function.');
+                }
+            })
+            .catch(error => {
+                console.error('Error requesting permission:', error);
+                alert('Failed to request orientation permission. Please try again.');
+            });
+    } else {
+        // Fallback for devices that don't require permission
+        window.addEventListener('deviceorientation', (event) => {
+            window.lastOrientation = event;
+            updateGauge(event);
+        });
+        permissionBtn.style.display = 'none';
+    }
+}
 
-// Settings menu toggle
+// Handle settings menu
 settingsBtn.addEventListener('click', () => {
     settingsMenu.classList.remove('hidden');
 });
@@ -65,15 +104,17 @@ closeSettings.addEventListener('click', () => {
 
 zeroBtn.addEventListener('click', zeroGauge);
 
-// Request permission for DeviceOrientationEvent on iOS
+// Request permission on button click
+permissionBtn.addEventListener('click', requestOrientationPermission);
+
+// Check if permission is already granted (e.g., after adding to home screen)
 if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-    DeviceOrientationEvent.requestPermission()
-        .then(permissionState => {
-            if (permissionState === 'granted') {
-                console.log('Device orientation permission granted');
-            } else {
-                alert('Permission denied for device orientation. Inclinometer will not function.');
-            }
-        })
-        .catch(console.error);
+    // Don't auto-request; wait for user interaction
+} else {
+    // For non-iOS or older browsers, try to initialize directly
+    window.addEventListener('deviceorientation', (event) => {
+        window.lastOrientation = event;
+        updateGauge(event);
+        permissionBtn.style.display = 'none';
+    });
 }
