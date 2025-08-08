@@ -14,15 +14,7 @@
     <div id="inclinometer">
         <div id="pitch-gauge" class="gauge">
             <svg viewBox="0 0 200 200" class="gauge-svg">
-                <!-- Degree markings every 10° -->
-                <g class="degree-marks">
-                    <g transform="rotate(-90, 100, 100)">
-                        <g v-for="i in 36" :key="i" :transform="'rotate(' + (i * 10) + ', 100, 100)'">
-                            <line x1="100" y1="10" x2="100" y2="20" stroke="#666" stroke-width="2"/>
-                            <text x="100" y="35" text-anchor="middle" fill="#fff" font-size="10" :transform="'rotate(' + (-i * 10) + ', 100, 100)'">{{ i * 10 - 180 }}°</text>
-                        </g>
-                    </g>
-                </g>
+                <g class="degree-marks" id="pitch-marks"></g>
                 <circle cx="100" cy="100" r="90" fill="none" stroke="#666" stroke-width="5"/>
                 <line id="pitch-line" x1="100" y1="30" x2="100" y2="170" stroke="#4CAF50" stroke-width="8"/>
                 <text x="100" y="190" text-anchor="middle" fill="#fff" font-size="12">Pitch</text>
@@ -31,17 +23,9 @@
         </div>
         <div id="roll-gauge" class="gauge">
             <svg viewBox="0 0 200 200" class="gauge-svg">
-                <!-- Degree markings every 10° -->
-                <g class="degree-marks">
-                    <g transform="rotate(-90, 100, 100)">
-                        <g v-for="i in 36" :key="i" :transform="'rotate(' + (i * 10) + ', 100, 100)'">
-                            <line x1="100" y1="10" x2="100" y2="20" stroke="#666" stroke-width="2"/>
-                            <text x="100" y="35" text-anchor="middle" fill="#fff" font-size="10" :transform="'rotate(' + (-i * 10) + ', 100, 100)'">{{ i * 10 - 180 }}°</text>
-                        </g>
-                    </g>
-                </g>
+                <g class="degree-marks" id="roll-marks"></g>
                 <circle cx="100" cy="100" r="90" fill="none" stroke="#666" stroke-width="5"/>
-                <line id="roll-line" x1="100" y1="30" x2="100" y2="170" stroke="#4CAF50" stroke-width="8"/>
+                <rect id="roll-box" x="70" y="40" width="60" height="20" fill="#4CAF50"/>
                 <text x="100" y="190" text-anchor="middle" fill="#fff" font-size="12">Roll</text>
             </svg>
             <p>Roll: <span id="roll">0.0</span>°</p>

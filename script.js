@@ -1,5 +1,5 @@
 const pitchLine = document.getElementById('pitch-line');
-const rollLine = document.getElementById('roll-line');
+const rollBox = document.getElementById('roll-box');
 const pitchDisplay = document.getElementById('pitch');
 const rollDisplay = document.getElementById('roll');
 const settingsBtn = document.getElementById('settings-btn');
@@ -14,7 +14,8 @@ let rollOffset = Number(localStorage.getItem('rollOffset')) || 0;
 // Smoothing variables
 let lastPitch = 0;
 let lastRoll = 0;
-const smoothingFactor = 0.05; // Stronger smoothing to reduce jumps
+const smoothingFactor = 0.03; // Stronger smoothing
+let lastAlpha = 0; // Track last alpha for delta-based roll
 
 // Add permission button
 const permissionBtn = document.createElement('button');
@@ -22,10 +23,10 @@ permissionBtn.id = 'permission-btn';
 permissionBtn.textContent = 'Enable Inclinometer';
 document.getElementById('inclinometer').appendChild(permissionBtn);
 
-// Generate degree markings dynamically
+// Generate degree markings
 function generateDegreeMarks() {
-    const pitchMarks = document.querySelector('#pitch-gauge .degree-marks');
-    const rollMarks = document.querySelector('#roll-gauge .degree-marks');
+    const pitchMarks = document.getElementById('pitch-marks');
+    const rollMarks = document.getElementById('roll-marks');
     for (let i = 0; i < 36; i++) {
         const angle = i * 10;
         const mark = `
@@ -40,25 +41,43 @@ function generateDegreeMarks() {
 generateDegreeMarks();
 
 function updateGauge(event) {
-    // Pitch: beta (x-axis), Roll: alpha (z-axis)
-    let pitch = event.beta !== null ? event.beta : 0;
-    let roll = event.alpha !== null ? event.alpha : 0;
+    // Raw sensor data
+    let beta = event.beta !== null ? event.beta : 0; // x-axis (pitch)
+    let alpha = event.alpha !== null ? event.alpha : 0; // z-axis (roll)
 
-    // Log for debugging
-    console.log('Raw - Beta (pitch):', event.beta, 'Alpha (roll):', event.alpha, 'Gamma:', event.gamma);
-    console.log('Processed - Pitch:', pitch, 'Roll:', roll);
+    // Log raw data
+    console.log('Raw - Beta:', beta, 'Alpha:', alpha, 'Gamma:', event.gamma);
+
+    // Adjust for mounted orientation (screen facing rear)
+    let pitch, roll;
+    const orientation = window.orientation || screen.orientation.angle || 0;
+    if (orientation === 0 || orientation === 180) { // Portrait or upside-down
+        // Screen facing rear: z-axis (alpha) is roll, beta is pitch
+        pitch = beta;
+        roll = alpha;
+    } else { // Landscape (90 or -90)
+        // Adjust for landscape: beta may need inversion, alpha may need rotation
+        pitch = beta; // May need adjustment based on testing
+        roll = alpha + (orientation === 90 ? -90 : 90); // Rotate alpha
+    }
 
     // Apply offsets
     pitch -= pitchOffset;
-    roll = ((roll - rollOffset) % 360 + 360) % 360; // Normalize to 0-360°
-    if (roll > 180) roll -= 360; // Convert to ±180°
+    roll = ((roll - rollOffset) % 360 + 360) % 360;
+    if (roll > 180) roll -= 360; // ±180°
 
     // Limit pitch to ±90°
     pitch = Math.max(-90, Math.min(90, pitch));
 
-    // Apply smoothing
+    // Delta-based roll smoothing to prevent jumps
+    let deltaRoll = roll - lastAlpha;
+    if (deltaRoll > 180) deltaRoll -= 360;
+    if (deltaRoll < -180) deltaRoll += 360;
+    roll = lastRoll + smoothingFactor * deltaRoll;
+    lastAlpha = alpha;
+
+    // Apply smoothing for pitch
     pitch = lastPitch + smoothingFactor * (pitch - lastPitch);
-    roll = lastRoll + smoothingFactor * (roll - lastRoll);
     lastPitch = pitch;
     lastRoll = roll;
 
@@ -67,9 +86,12 @@ function updateGauge(event) {
     rollDisplay.textContent = roll.toFixed(1);
 
     // Rotate lines: pitch clockwise for positive, counterclockwise for negative
-    // Roll line rotates opposite to phone roll to appear level
+    // Roll box rotates opposite to appear level
     pitchLine.style.transform = `rotate(${pitch}deg)`;
-    rollLine.style.transform = `rotate(${-roll}deg)`;
+    rollBox.style.transform = `rotate(${-roll}deg)`;
+
+    // Log processed values
+    console.log('Processed - Pitch:', pitch, 'Roll:', roll, 'Orientation:', orientation);
 }
 
 // Zero the pitch and roll
