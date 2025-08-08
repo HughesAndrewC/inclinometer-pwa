@@ -2,24 +2,24 @@
     "name": "Inclinometer",
     "short_name": "Inclinometer",
     "description": "A PWA inclinometer for measuring pitch and roll in vehicles",
-    "start_url": "/index.html",
+    "start_url": "/inclinometer-pwa/",
     "display": "standalone",
     "background_color": "#222",
     "theme_color": "#222",
     "orientation": "any",
     "icons": [
         {
-            "src": "icons/icon-192.png",
+            "src": "/inclinometer-pwa/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "icons/icon-512.png",
+            "src": "/inclinometer-pwa/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png"
         },
         {
-            "src": "icons/apple-touch-icon.png",
+            "src": "/inclinometer-pwa/icons/apple-touch-icon.png",
             "sizes": "180x180",
             "type": "image/png",
             "purpose": "apple touch icon"
