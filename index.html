@@ -12,12 +12,22 @@
 </head>
 <body>
     <div id="inclinometer">
-        <div id="gauge">
-            <div id="bubble"></div>
-            <div id="crosshair"></div>
-        </div>
-        <div id="readout">
+        <div id="pitch-gauge" class="gauge">
+            <svg id="pitch-indicator" viewBox="0 0 100 100" class="indicator">
+                <rect x="20" y="40" width="60" height="20" fill="#4CAF50"/>
+                <circle cx="30" cy="60" r="8" fill="#333"/>
+                <circle cx="70" cy="60" r="8" fill="#333"/>
+                <text x="50" y="30" text-anchor="middle" fill="#fff" font-size="12">Pitch</text>
+            </svg>
             <p>Pitch: <span id="pitch">0.0</span>°</p>
+        </div>
+        <div id="roll-gauge" class="gauge">
+            <svg id="roll-indicator" viewBox="0 0 100 100" class="indicator">
+                <rect x="20" y="40" width="60" height="20" fill="#4CAF50"/>
+                <circle cx="30" cy="60" r="8" fill="#333"/>
+                <circle cx="70" cy="60" r="8" fill="#333"/>
+                <text x="50" y="30" text-anchor="middle" fill="#fff" font-size="12">Roll</text>
+            </svg>
             <p>Roll: <span id="roll">0.0</span>°</p>
         </div>
         <button id="settings-btn">⚙️ Settings</button>

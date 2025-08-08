@@ -1,8 +1,5 @@
-// Load stored offsets or initialize to zero
-let pitchOffset = Number(localStorage.getItem('pitchOffset')) || 0;
-let rollOffset = Number(localStorage.getItem('rollOffset')) || 0;
-
-const bubble = document.getElementById('bubble');
+const pitchIndicator = document.getElementById('pitch-indicator');
+const rollIndicator = document.getElementById('roll-indicator');
 const pitchDisplay = document.getElementById('pitch');
 const rollDisplay = document.getElementById('roll');
 const settingsBtn = document.getElementById('settings-btn');
@@ -10,57 +7,57 @@ const settingsMenu = document.getElementById('settings-menu');
 const zeroBtn = document.getElementById('zero-btn');
 const closeSettings = document.getElementById('close-settings');
 
+// Load stored offsets
+let pitchOffset = Number(localStorage.getItem('pitchOffset')) || 0;
+let rollOffset = Number(localStorage.getItem('rollOffset')) || 0;
+
+// Smoothing variables
+let lastPitch = 0;
+let lastRoll = 0;
+const smoothingFactor = 0.1; // Adjust for smoother transitions
+
 // Add permission button
 const permissionBtn = document.createElement('button');
 permissionBtn.id = 'permission-btn';
 permissionBtn.textContent = 'Enable Inclinometer';
-permissionBtn.style.cssText = `
-    font-size: 1.5em;
-    padding: 10px 20px;
-    background: #444;
-    border: none;
-    color: #fff;
-    border-radius: 5px;
-    margin: 10px;
-    cursor: pointer;
-`;
 document.getElementById('inclinometer').appendChild(permissionBtn);
 
 function updateGauge(event) {
+    // Pitch: beta (x-axis), Roll: alpha (z-axis)
     let pitch = event.beta !== null ? event.beta : 0;
-    let roll = event.gamma !== null ? event.gamma : 0;
+    let roll = event.alpha !== null ? event.alpha : 0;
 
     // Log for debugging
-    console.log('Orientation - Beta:', event.beta, 'Gamma:', event.gamma);
+    console.log('Raw - Beta (pitch):', event.beta, 'Alpha (roll):', event.alpha, 'Gamma:', event.gamma);
 
     // Apply offsets
     pitch -= pitchOffset;
-    roll -= rollOffset;
+    roll = ((roll - rollOffset) % 360 + 360) % 360; // Normalize to 0-360°
+    if (roll > 180) roll -= 360; // Convert to ±180°
 
-    // Limit pitch and roll to ±90°
+    // Limit pitch to ±90°
     pitch = Math.max(-90, Math.min(90, pitch));
-    roll = Math.max(-90, Math.min(90, roll));
+
+    // Apply smoothing
+    pitch = lastPitch + smoothingFactor * (pitch - lastPitch);
+    roll = lastRoll + smoothingFactor * (roll - lastRoll);
+    lastPitch = pitch;
+    lastRoll = roll;
 
     // Update display
     pitchDisplay.textContent = pitch.toFixed(1);
     rollDisplay.textContent = roll.toFixed(1);
 
-    // Calculate bubble position
-    const gauge = document.getElementById('gauge');
-    const gaugeSize = gauge.offsetWidth || 300; // Fallback size
-    const maxBubbleOffset = (gaugeSize - 20) / 2; // 20 is bubble size
-    const x = (roll / 90) * maxBubbleOffset;
-    const y = (pitch / 90) * maxBubbleOffset;
-
-    // Update bubble position
-    bubble.style.transform = `translate(${x}px, ${y}px)`;
+    // Rotate indicators
+    pitchIndicator.style.transform = `rotate(${pitch}deg)`;
+    rollIndicator.style.transform = `rotate(${roll}deg)`;
 }
 
 // Zero the pitch and roll
 function zeroGauge() {
-    const event = window.lastOrientation || { beta: 0, gamma: 0 };
+    const event = window.lastOrientation || { beta: 0, alpha: 0 };
     pitchOffset = event.beta || 0;
-    rollOffset = event.gamma || 0;
+    rollOffset = event.alpha || 0;
     localStorage.setItem('pitchOffset', pitchOffset);
     localStorage.setItem('rollOffset', rollOffset);
     updateGauge(event);
@@ -79,7 +76,7 @@ function requestOrientationPermission() {
                     });
                     permissionBtn.style.display = 'none';
                 } else {
-                    alert('Permission denied for device orientation. Inclinometer will not function.');
+                    alert('Permission denied. Inclinometer will not function.');
                 }
             })
             .catch(error => {

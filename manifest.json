@@ -3,6 +3,7 @@
     "short_name": "Inclinometer",
     "description": "A PWA inclinometer for measuring pitch and roll in vehicles",
     "start_url": "/inclinometer-pwa/",
+    "scope": "/inclinometer-pwa/",
     "display": "standalone",
     "background_color": "#222",
     "theme_color": "#222",
